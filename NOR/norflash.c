@@ -18,6 +18,7 @@ int norflash_test(void)
 		printf("[s] Scan norflash\n\r");
 		printf("[e] Erase norflash\n\r");
 		printf("[r] Read norflash\n\r");
+		printf("[1] Simple Read norflash\n\r");
 		printf("[w] Write norflash\n\r");
 		printf("[q] quit\n\r");
 		printf("Enter your choice: ");
@@ -36,6 +37,9 @@ int norflash_test(void)
 				break;
 			case 'r':
 				read_norflash();
+				break;
+			case '1':
+				simple_read();
 				break;
 			case 'w':
 				write_norflash();
@@ -247,5 +251,18 @@ int write_norflash(void)
 	wait_ready(addr>>1);
 
 	return 0;
+}
+
+
+int simple_read(void)
+{
+	unsigned int addr;
+	volatile unsigned char *p;
+
+	printf("Enter addr to read: ");
+	addr = get_uint();
+	p = (volatile unsigned char *)addr;
+
+	printf("data is %02x\n\r", *p); 
 }
 
