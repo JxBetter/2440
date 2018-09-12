@@ -1,19 +1,14 @@
-all:
-	arm-linux-gcc -Iinclude -march=armv4 -c -o uart.o uart.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o init.o init.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o main.o main.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o timer.o timer.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o norflash.o norflash.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o nandflash.o nandflash.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o string_utils.o string_utils.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o my_printf.o my_printf.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o interrupt.o interrupt.c
-	arm-linux-gcc -Iinclude -march=armv4 -c -o start.o start.S
-	arm-linux-gcc -Iinclude -march=armv4 -c -o lib1funcs.o lib1funcs.S
-	#arm-linux-ld -Ttext 0 -Tdata 0x800 start.o init.o uart.o uart_app.o -o uart.elf
-	arm-linux-ld -T sdram.lds start.o init.o uart.o main.o timer.o norflash.o nandflash.o lib1funcs.o string_utils.o my_printf.o interrupt.o -o nand.elf
+all: start.o init.o interrupt.o nandflash.o norflash.o uart.o main.o timer.o  my_printf.o string_utils.o lib1funcs.o
+	#arm-linux-ld -Ttext 0 -Tdata 0x30000000  start.o led.o uart.o init.o main.o -o sdram.elf
+	arm-linux-ld -T sdram.lds $^ -o nand.elf
 	arm-linux-objcopy -O binary -S nand.elf nand.bin
 	arm-linux-objdump -D nand.elf > nand.dis
-	
 clean:
 	rm *.bin *.o *.elf *.dis
+	
+%.o : %.c
+	arm-linux-gcc -Iinclude -march=armv4 -c -o $@ $<
+
+%.o : %.S
+	arm-linux-gcc -march=armv4 -c -o $@ $<
+	
