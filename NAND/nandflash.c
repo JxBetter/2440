@@ -1,3 +1,4 @@
+#include "my_printf.h"
 #include "s3c2440_soc.h"
 
 
@@ -37,6 +38,13 @@ int nand_addr(unsigned char addr)
 unsigned char nand_data(void)
 {
 	return NFDATA;
+}
+
+
+int nand_write_data(unsigned char data)
+{
+	NFDATA = data;
+	return 0;
 }
 
 
@@ -120,6 +128,139 @@ int read_nandflash(unsigned int addr, unsigned char *buff, unsigned int len)
 }
 
 
+int erase_nand(unsigned int addr, unsigned int len)
+{
+	int page;
+	if ((addr & 0x1ffff) || (len & 0x1ffff))
+		return -1;
+	nand_select_chip();
+
+	while(1)
+	{
+		page = addr / 2048;
+		nand_command(0x60);
+		nand_addr(page & 0xff);
+		nand_addr((page >> 8) & 0xff);
+		nand_addr((page >> 16) & 0xff);
+		nand_command(0xD0);
+		wait();
+
+		len -= (1024*128);
+		if (len <= 0)
+			break;
+
+		addr += (1024*128);
+	}
+	nand_deselect_chip();
+	return 0;
+}
+
+
+int write_nand(unsigned int addr, unsigned char *buff, unsigned int len)
+{
+	extern int bss_start;
+	nand_select_chip();
+	int i, page, col;
+	i = 0;
+	page = addr / 2048;
+	col = addr % 2048;
+
+	while(1)
+	{
+		nand_command(0x80);
+		nand_addr(col & 0xff);
+		nand_addr((col >> 8) & 0xff);
+		nand_addr(page & 0xff);
+		nand_addr((page >> 8) & 0xff);
+		nand_addr((page >> 16) & 0xff);
+
+		for (;(col<2048) && (i<len);col++)
+		{
+			nand_write_data(buff[i++]);
+		}
+		nand_command(0x10);
+		wait();
+		col = 0;
+		if (i == len)
+			break;
+		page++;
+	}
+}
+
+
+int do_erase_nandflash(void)
+{
+	unsigned int addr;
+	
+	/* »ñµÃµØÖ· */
+	printf("Enter the address of sector to erase: ");
+	addr = get_uint();
+
+	printf("erasing ...\n\r");
+	erase_nand(addr, 128*1024);
+}
+
+
+void do_read_nandflash(void)
+{
+	unsigned int addr;
+	volatile unsigned char *p;
+	int i, j;
+	unsigned char c;
+	unsigned char str[16];
+	unsigned char buf[64];
+	
+	/* »ñµÃµØÖ· */
+	printf("Enter the address to read: ");
+	addr = get_uint();
+
+	read_nandflash(addr, buf, 64);
+	p = (volatile unsigned char *)buf;
+
+	printf("Data : \n\r");
+
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 0; j < 16; j++)
+		{
+			c = *p++;
+			str[j] = c;
+			printf("%02x ", c);
+		}
+
+		printf("   ; ");
+
+		for (j = 0; j < 16; j++)
+		{
+			if (str[j] < 0x20 || str[j] > 0x7e)
+				transmit('.');
+			else
+				transmit(str[j]);
+		}
+		printf("\n\r");
+	}
+}
+
+
+void do_write_nandflash(void)
+{
+	unsigned int addr;
+	unsigned char str[100];
+	int i, j;
+	unsigned int val;
+	
+	printf("Enter the address of sector to write: ");
+	addr = get_uint();
+
+	printf("Enter the string to write: ");
+	gets(str);
+
+	printf("writing ...\n\r");
+	write_nand(addr, str, strlen(str)+1);
+
+}
+
+
 int nandflash_test(void)
 {
 	/* 测试函数 */
@@ -144,13 +285,13 @@ int nandflash_test(void)
 				nand_read_id();
 				break;
 			case 'e':
-				//erase_norflash();
+				do_erase_nandflash();
 				break;
 			case 'r':
-				read_nandflash(0x00, buff, 8);
+				do_read_nandflash();
 				break;
 			case 'w':
-				//write_norflash();
+				do_write_nandflash();
 				break;
 			default :
 				break;
