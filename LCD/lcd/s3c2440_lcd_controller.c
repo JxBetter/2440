@@ -1,15 +1,20 @@
 #include "lcd_controller.h"
 #include "s3c2440_soc.h"
-
 #define HCLK 100
 
-struct lcd_controller s3c2440_lcd_controller
+
+int s3c2440_lcd_controller_init(p_lcd_params p);
+int s3c2440_lcd_controller_enable(void);
+int s3c2440_lcd_controller_disable(void);
+
+
+struct lcd_controller s3c2440_lcd_controller = 
 {
-	.name = "s3c2440";
-	.init = s3c2440_lcd_controller_init;
-	.enable = s3c2440_lcd_controller_enable;
-	.disable = s3c2440_lcd_controller_disable;
-}
+	.name = "s3c2440",
+	.init = s3c2440_lcd_controller_init,
+	.enable = s3c2440_lcd_controller_enable,
+	.disable = s3c2440_lcd_controller_disable,
+};
 
 
 int s3c2440_pins_init(void)
@@ -45,7 +50,7 @@ int s3c2440_lcd_controller_init(p_lcd_params p)
 	 *
 	 * [0] lcd video使能位
 	 */
-	int clkval = (double)HCLK / p->time_sequence.vclk / 2 - 1 + 0.5;
+	int clkval = (double)HCLK / p->time_sequence_config.vclk / 2 - 1 + 0.5;
 	int bppmode = p->bpp == 8  ? 0xb :\
 			      p->bpp == 16 ? 0xc :\
 			  				     0xd;
@@ -60,11 +65,10 @@ int s3c2440_lcd_controller_init(p_lcd_params p)
 	 * [5:0]   : VSPW    = tvp - 1
 	 */
 
-	LCDCON2 = ((p->time_sequence.tvb - 1) << 24) | \
-				((p->y - 1) << 14) | \ //分辨率，行数，y方向
-				((p->time_sequence.tvf - 1) << 6) | \
-				((p->time_sequence.tvp - 1) << 0);
-
+	LCDCON2 = ((p->time_sequence_config.tvb - 1) << 24) | \
+	((p->y - 1) << 14) | \
+	((p->time_sequence_config.tvf - 1) << 6) | \
+	((p->time_sequence_config.tvp - 1) << 0);
 	/* 
 	 * LCDCON3:
 	 *
@@ -73,9 +77,9 @@ int s3c2440_lcd_controller_init(p_lcd_params p)
 	 * [7:0]   : HFPD	 = thf - 1
 	 */
 
-	LCDCON3 = ((p->time_sequence.thb - 1) << 19) | \
+	LCDCON3 = ((p->time_sequence_config.thb - 1) << 19) | \
 				((p->x - 1) << 8) | \
-				((p->time_sequence.thf - 1) << 0);
+				((p->time_sequence_config.thf - 1) << 0);
 
 	/* 
 	 * LCDCON4:
@@ -83,7 +87,7 @@ int s3c2440_lcd_controller_init(p_lcd_params p)
 	 * [7:0]   : HSPW	 = thp - 1
 	 */
 
-	LCDCON4 = ((P->time_sequence.thp - 1) << 0);
+	LCDCON4 = ((p->time_sequence_config.thp - 1) << 0);
 
 	/*
 	 * LCDCON5:
@@ -107,12 +111,12 @@ int s3c2440_lcd_controller_init(p_lcd_params p)
 	int piexl_mode = p->bpp == 24 ? 0 : \
 						p->bpp == 16 ? 1 : \
 						(1<<1);
-	LCDCON5 = ((p->lcd_pins.vlck) << 10) | \
-				((p->lcd_pins.rgb) << 7) | \
-				((p->lcd_pins.hsync) << 9) | \
-				((p->lcd_pins.vsync) << 8) | \
-				((p->lcd_pins.de) << 6) | \
-				((p->lcd_pins.pwren) << 5) | \
+	LCDCON5 = ((p->lcd_pins_config.vclk) << 10) | \
+				((p->lcd_pins_config.rgb) << 7) | \
+				((p->lcd_pins_config.hsync) << 9) | \
+				((p->lcd_pins_config.vsync) << 8) | \
+				((p->lcd_pins_config.de) << 6) | \
+				((p->lcd_pins_config.pwren) << 5) | \
 				(1<<11) | piexl_mode;
 
 	/*
@@ -166,5 +170,12 @@ int s3c2440_lcd_controller_disable(void)
 	/* LCDCON1'BIT 0 : 设置LCD控制器是否输出信号 */
 	LCDCON1 &= ~(1<<0);
 
+	return 0;
+}
+
+
+int s3c2440_lcd_controller_add(void)
+{
+	register_lcd_controller(&s3c2440_lcd_controller);
 	return 0;
 }

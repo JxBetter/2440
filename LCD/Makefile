@@ -1,8 +1,15 @@
-all: start.o init.o interrupt.o nandflash.o norflash.o uart.o main.o timer.o  my_printf.o string_utils.o lib1funcs.o
+objs = start.o uart.o init.o nandflash.o main.o interrupt.o timer.o norflash.o my_printf.o string_utils.o lib1funcs.o
+
+objs += lcd/lcd.o
+objs += lcd/lcd_4.3.o
+objs += lcd/lcd_controller.o
+objs += lcd/s3c2440_lcd_controller.o
+
+all: $(objs)
 	#arm-linux-ld -Ttext 0 -Tdata 0x30000000  start.o led.o uart.o init.o main.o -o sdram.elf
-	arm-linux-ld -T sdram.lds $^ -o nand.elf
-	arm-linux-objcopy -O binary -S nand.elf nand.bin
-	arm-linux-objdump -D nand.elf > nand.dis
+	arm-linux-ld -T lcd.lds $^ libgcc.a -o lcd.elf
+	arm-linux-objcopy -O binary -S lcd.elf lcd.bin
+	arm-linux-objdump -D lcd.elf > lcd.dis
 clean:
 	rm *.bin *.o *.elf *.dis
 	

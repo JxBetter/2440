@@ -2,7 +2,7 @@
 #define _LCD_
 
 
-enum
+enum polarity
 {
 	NORMAL = 0,
 	INVERT = 1,
