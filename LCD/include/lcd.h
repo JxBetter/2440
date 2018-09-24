@@ -2,7 +2,7 @@
 #define _LCD_
 
 
-enum polarity
+enum
 {
 	NORMAL = 0,
 	INVERT = 1,
@@ -64,5 +64,6 @@ int lcd_disable(void);
 int lcd_add(void);
 int lcd_init(void);
 int lcd_4_3_add(void);
+int get_lcd_params(unsigned int *fb_addr, unsigned int *x, unsigned int *y, unsigned int *bpp);
 
 #endif

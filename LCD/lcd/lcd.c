@@ -66,3 +66,12 @@ int lcd_init(void)
 	return 0;
 }
 
+
+int get_lcd_params(unsigned int *fb_addr, unsigned int *x, unsigned int *y, unsigned int *bpp)
+{
+	*fb_addr = current_lcd_params -> framebuffer_base;
+	*x = current_lcd_params -> x;
+	*y = current_lcd_params -> y;
+	*bpp = current_lcd_params -> bpp;
+	return 0;
+}

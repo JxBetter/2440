@@ -1,7 +1,10 @@
 objs = start.o uart.o init.o nandflash.o main.o interrupt.o timer.o norflash.o my_printf.o string_utils.o lib1funcs.o
 
 objs += lcd/lcd.o
+objs += lcd/draw.o
 objs += lcd/lcd_4.3.o
+objs += lcd/lcd_test.o
+objs += lcd/font_10x18.o
 objs += lcd/lcd_controller.o
 objs += lcd/s3c2440_lcd_controller.o
 
