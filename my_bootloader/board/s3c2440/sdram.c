@@ -48,7 +48,8 @@ int copy_to_sdram(void)
 	volatile unsigned char *dest = (volatile unsigned char *)&__code_start;
 	volatile unsigned char *end = (volatile unsigned char *)&__bss_start;
 	//len = (int)&bss_start - (int)&_code_start;
-	len = end - dest;
+	len = end - dest; 
+	nandflash_init(); //统一初始化nand，因为即使是nor启动最后也要将内核从nand中拷贝到ram中
 	
 	if (boot_from_nor())
 	{
@@ -60,7 +61,6 @@ int copy_to_sdram(void)
 	}
 	else
 	{
-		nandflash_init();
 		read_nandflash((unsigned int)src, (unsigned char *)dest, len);
 		transmits("copy nandflash to sdram success\n\r");
 	}
