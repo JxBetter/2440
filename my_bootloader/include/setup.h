@@ -244,7 +244,7 @@ struct tagtable {
 	((unsigned long)(&((struct tag *)0L)->member + 1)	\
 		<= (tag)->hdr.size * 4)
 
-#define tag_next(t)	(s((u32 *)(t) + (t)->hdr.size))
+#define tag_next(t)	((struct tag *)((u32 *)(t) + t -> hdr.size))
 #define tag_size(type)	((sizeof(struct tag_header) + sizeof(struct type)) >> 2)
 
 #define for_each_tag(t,base)		\

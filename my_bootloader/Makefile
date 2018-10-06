@@ -15,6 +15,7 @@ objs += ./board/s3c2440/sdram.o
 objs += ./board/s3c2440/uart.o
 objs += ./lib/my_printf.o
 objs += ./lib/string_utils.o
+objs += ./lib/lib1funcs.o
 objs += boot.o
 
 boot.bin: $(objs)
